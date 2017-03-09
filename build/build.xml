@@ -1,0 +1,97 @@
+<project name="HowlServer" default="build" basedir="..">
+
+	<property name="main.class" value="nohorjo.howlserver.HowlServer" />
+
+	<property name="app.name" value="HowlServer" />
+
+	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+		<classpath path="lib/jacocoant.jar" />
+	</taskdef>
+
+	<target name="clean">
+		<delete dir="build/report" />
+		<delete>
+			<fileset dir="build">
+				<include name="**/*" />
+				<exclude name="build.xml" />
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="build" depends="clean,jar" />
+
+	<target name="jar" depends="testReport">
+		<jar destfile="build/${app.name}.jar">
+			<fileset dir="bin">
+				<exclude name="**/*TEST.class" />
+				<exclude name="**/*MOCK.class" />
+			</fileset>
+			<manifest>
+				<attribute name="Main-Class" value="${main.class}" />
+			</manifest>
+			<zipfileset dir="res" includes="**/*" />
+			<zipgroupfileset dir="lib">
+				<exclude name="**/*junit*.jar" />
+				<exclude name="**/*hamcrest*.jar" />
+				<exclude name="**/*powermock*.jar" />
+				<exclude name="**/*cglib*.jar" />
+				<exclude name="**/*javassist*.jar" />
+				<exclude name="**/*mockito*.jar" />
+				<exclude name="**/*objenesis*.jar" />
+				<exclude name="**/jacocoant.jar" />
+			</zipgroupfileset>
+			<zipgroupfileset dir="../ncommonutils/build" includes="**/*.jar" />
+		</jar>
+	</target>
+
+	<target name="testReport" depends="test" if="test.complete">
+		<jacoco:report xmlns:jacoco="antlib:org.jacoco.ant">
+			<executiondata>
+				<file file="build/jacoco.exec" />
+			</executiondata>
+			<structure name="HowlServer">
+				<classfiles>
+					<fileset dir="bin">
+						<exclude name="**/*TEST*" />
+						<exclude name="**/*MOCK*" />
+					</fileset>
+				</classfiles>
+				<sourcefiles encoding="UTF-8">
+					<fileset dir="src">
+						<exclude name="**/*TEST*" />
+						<exclude name="**/*MOCK*" />
+					</fileset>
+				</sourcefiles>
+			</structure>
+			<html destdir="build/report" />
+		</jacoco:report>
+	</target>
+
+	<target name="test">
+		<jacoco:coverage destfile="build/jacoco.exec" xmlns:jacoco="antlib:org.jacoco.ant">
+			<junit dir="." fork="true" showoutput="true" printsummary="withOutAndErr" haltonerror="true" haltonfailure="true" failureproperty="test.failed">
+				<formatter type="plain" usefile="false" />
+				<classpath>
+					<pathelement location="bin" />
+					<pathelement location="res" />
+					<fileset dir="lib">
+						<include name="junit*.jar" />
+						<include name="hamcrest*.jar" />
+						<include name="powermock*.jar" />
+						<include name="cglib*.jar" />
+						<include name="javassist*.jar" />
+						<include name="mockito*.jar" />
+						<include name="objenesis*.jar" />
+					</fileset>
+					<fileset dir="../ncommonutils/build" includes="ncommonutils.jar" />
+				</classpath>
+				<batchtest>
+					<fileset dir="bin" includes="**/*TEST.class" />
+				</batchtest>
+			</junit>
+		</jacoco:coverage>
+
+		<available file="build/jacoco.exec" property="test.complete" />
+	</target>
+
+</project>
