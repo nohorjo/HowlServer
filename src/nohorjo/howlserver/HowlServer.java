@@ -20,6 +20,7 @@ import nohorjo.dbservice.location.LocationDAO;
 import nohorjo.delegation.Action;
 import nohorjo.file.FileUtils;
 import nohorjo.ip.IPScanner;
+import nohorjo.out.DatedPrintStream;
 import nohorjo.socket.SocketServer;
 import nohorjo.unauth.UnauthorisedAccessException;
 
@@ -35,6 +36,8 @@ public class HowlServer {
 	private static Map<String, String> sb = new HashMap<>();
 
 	public static void main(String[] args) throws IOException, SQLException {
+		System.setErr(new DatedPrintStream(System.err));
+		System.setOut(new DatedPrintStream(System.out));
 		ConnectionManager.test();
 		IPScanner.init();
 		Action onReceive = new Action() {
