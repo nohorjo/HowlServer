@@ -1,5 +1,6 @@
 package nohorjo.howlserver;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
@@ -17,6 +18,7 @@ import nohorjo.dbservice.ConnectionManager;
 import nohorjo.dbservice.connection.ConnectionLogDAO;
 import nohorjo.dbservice.location.LocationDAO;
 import nohorjo.delegation.Action;
+import nohorjo.file.FileUtils;
 import nohorjo.ip.IPScanner;
 import nohorjo.socket.SocketServer;
 import nohorjo.unauth.UnauthorisedAccessException;
@@ -87,6 +89,12 @@ public class HowlServer {
 				System.out.println("Decrypted message = " + decrypted);
 				LocationDAO dao = new LocationDAO();
 				switch (messageData[0]) {
+				case "TAIL":
+					String logTail = FileUtils.readLastNLines(new File("server.log"), 100);
+					server.send(remoteAddress, tbe.encrypt(KEY, logTail).getBytes());
+					server.send(remoteAddress, EOT);
+					System.out.println("Sent log tail, length: " + logTail.length());
+					break;
 				case "H":
 					server.sendAll(tbe.encrypt(KEY, "hb").getBytes());
 					server.sendAll(EOT);
